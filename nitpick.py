@@ -154,7 +154,7 @@ def sort_includes(filename, lines):
         if is_project_file(hfile.name):
           if hfile.is_system:
             # Why not do some work and update that bad boy?
-            line = re.sub(r"<(.*)>", r"\"\1\"", line)
+            line = re.sub(r"<(.*)>", r'"\1"', line)
             warn(u'"%s" looks like a project-file, but is included with <> '
                  'in "%s:%d": %s', hfile.name, filename, lnum+1, repr(hfile))
         else:
