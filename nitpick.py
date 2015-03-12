@@ -89,7 +89,9 @@ def is_own_header(src_file, include):
   if _ROOT:
     src_file = os.path.relpath(src_file, _ROOT)
   inc_pref = os.path.normpath(os.path.splitext(include)[0])
+  inc_pref = inc_pref.replace("spifftools/", "")
   src_pref = os.path.normpath(os.path.splitext(src_file)[0])
+  src_pref = src_pref.replace("../src/", "")
   if src_pref.endswith('_test'):
     src_pref = src_pref[:-5]
   return inc_pref == src_pref
@@ -148,17 +150,22 @@ def sort_includes(filename, lines):
           err(u'"%s" included more than once (inconsistently) in "%s:%d": %s',
               hfile.name, filename, lnum+1, hfile)
       else:
-        # Add include to batch
-        includes[hkey] = hfile
         # Sanity check system-vs-project include
         if is_project_file(hfile.name):
           if hfile.is_system:
+            # Why not do some work and update that bad boy?
+            line = re.sub(r"<(.*)>", r"\"\1\"", line)
             warn(u'"%s" looks like a project-file, but is included with <> '
                  'in "%s:%d": %s', hfile.name, filename, lnum+1, repr(hfile))
         else:
           if not hfile.is_system:
+            # Why not do some work and update that bad boy?
+            line = re.sub(r"\"(.*)\"", r"<\1>", line)
             warn(u'"%s" looks like a system-file, but is included with "" '
                  'in "%s:%d": %s', hfile.name, filename, lnum+1, repr(hfile))
+        # Add include to batch
+        hfile = HFile(line)
+        includes[hkey] = hfile
     else:
       if in_batch:
         # Maybe end of includes batch?
@@ -252,8 +259,8 @@ def stylify_lines(args, filename, lines):
   for mod in args.modules:
     if u'sort_includes' == mod:
       lines = sort_includes(filename, lines)
-    if u'correct_spacing' == mod:
-      lines = [correct_spacing(line) for line in lines]
+    #if u'correct_spacing' == mod:
+      #lines = [correct_spacing(line) for line in lines]
   return lines
 
 def stylify_file(args, filepath):
